@@ -70,6 +70,13 @@ def findNextNumber():
 def captureData() -> [{ timestamp: datetime, acc_x: float, acc_y: float, acc_z: float, gyro_x: float, gyro_y: float, gyro_z: float }]:
     data = []
 
+    print(f'Starting in: 3', end='\r')
+    time.sleep(1)
+    print(f'Starting in: 2', end='\r')
+    time.sleep(1)
+    print(f'Starting in: 1', end='\r')
+    time.sleep(1)
+
     start = time.time()
     while time.time() - start < CAPTURE_TIMEOUT: # Record until timeout is reached
         acc = sensor.get_value('accelerometer')
@@ -82,7 +89,7 @@ def captureData() -> [{ timestamp: datetime, acc_x: float, acc_y: float, acc_z: 
         })
 
         time_passed = int(time.time() - start)
-        print(f'Still Recoring for: {str(10 - time_passed)}s ', end='\r')
+        print(f'Still Recording for: {str(10 - time_passed)}s ', end='\r')
 
         time.sleep(0.001) # Sample at ~1000Hz aka. 1/1000 = 0.001
 
