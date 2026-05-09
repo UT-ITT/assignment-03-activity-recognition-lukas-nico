@@ -2,7 +2,7 @@
 from DIPPID import SensorUDP
 import pandas
 import time
-from datetime import datetime
+from datetime import datetime, UTC
 import glob
 import re
 from pathlib import Path
@@ -68,7 +68,7 @@ def findNextNumber():
 
     return 1
 
-def captureData() -> [{ timestamp: datetime, acc_x: float, acc_y: float, acc_z: float, gyro_x: float, gyro_y: float, gyro_z: float }]:
+def captureData() -> [{ datetime: datetime, acc_x: float, acc_y: float, acc_z: float, gyro_x: float, gyro_y: float, gyro_z: float }]:
     data = []
 
     print(f'Starting in: 3', end='\r')
@@ -84,7 +84,7 @@ def captureData() -> [{ timestamp: datetime, acc_x: float, acc_y: float, acc_z: 
         gyro = sensor.get_value('gyroscope')
 
         data.append({
-            'timestamp': datetime.now(),
+            'datetime': datetime.now(UTC),
             'acc_x': acc['x'], 'acc_y': acc['y'], 'acc_z': acc['z'],
             'gyro_x': gyro['x'], 'gyro_y': gyro['y'], 'gyro_z': gyro['z']
         })
@@ -98,12 +98,12 @@ def captureData() -> [{ timestamp: datetime, acc_x: float, acc_y: float, acc_z: 
 
     return data
 
-def saveCSV(data: [{ timestamp: datetime, acc_x: float, acc_y: float, acc_z: float, gyro_x: float, gyro_y: float, gyro_z: float }], filename: string) -> None:
+def saveCSV(data: [{ datetime: datetime, acc_x: float, acc_y: float, acc_z: float, gyro_x: float, gyro_y: float, gyro_z: float }], filename: string) -> None:
     # Create the data frame
     data_frame = pandas.DataFrame(data)
 
     # Set the timestamp as the index
-    data_frame = data_frame.set_index('timestamp')
+    data_frame = data_frame.set_index('datetime')
 
     # Resample to 100 Hz (aka 10ms intervals)
     data_frame = data_frame.resample('10ms').mean().interpolate()
@@ -111,23 +111,22 @@ def saveCSV(data: [{ timestamp: datetime, acc_x: float, acc_y: float, acc_z: flo
     # Only keep exactly 10 seconds
     data_frame = data_frame.head(1000)
 
+    # Add timestamp field (convert from nano- to milli-seconds)
+    data_frame.insert(0, 'timestamp', data_frame.index.astype('int64') // 1_000_000)
+
     # Add the id field
     data_frame.insert(0, 'id', range(len(data_frame)))
 
     # Save the data frame as csv and keep the index (timestamp)
-    data_frame.to_csv(filename, index = True)
+    data_frame.to_csv(filename, index=False)
 
 def handleButton(btn: 0 | 1) -> None:
-    # Safeguard against button release
-    # We only care if the button was pressed
-    if btn != 1: return
-
-    # Block the Button Press if the recording has started
     global can_press_button
-    if not can_press_button:
-        return
-    can_press_button = False
 
+    # Safeguard against button release or early button_press
+    if btn != 1 or not can_press_button: return
+
+    can_press_button = False
     captured_data = captureData()
 
     # Repeat until y or n
