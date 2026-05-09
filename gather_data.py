@@ -106,10 +106,7 @@ def saveCSV(data: [{ datetime: datetime, acc_x: float, acc_y: float, acc_z: floa
     data_frame = data_frame.set_index('datetime')
 
     # Resample to 100 Hz (aka 10ms intervals)
-    data_frame = data_frame.resample('10ms').mean().interpolate()
-
-    # Only keep exactly 10 seconds
-    data_frame = data_frame.head(1000)
+    data_frame = data_frame.resample('10ms').mean()
 
     # Add timestamp field (convert from nano- to milli-seconds)
     data_frame.insert(0, 'timestamp', data_frame.index.astype('int64') // 1_000_000)
