@@ -15,6 +15,7 @@ sensor = SensorUDP(PORT)
 
 name = ''
 activity = ''
+can_press_button = True
 
 def sanitize(str: string) -> string:
     # Filter any character that is not a letter, number or '_'
@@ -93,7 +94,7 @@ def captureData() -> [{ timestamp: datetime, acc_x: float, acc_y: float, acc_z: 
 
         time.sleep(0.001) # Sample at ~1000Hz aka. 1/1000 = 0.001
 
-    print(f'Still Recoring for: done')
+    print(f'Still Recording for: done')
 
     return data
 
@@ -121,8 +122,11 @@ def handleButton(btn: 0 | 1) -> None:
     # We only care if the button was pressed
     if btn != 1: return
 
-    # Unregister the callback temporarly to prevent double invocation
-    sensor.unregister_callback('button_1', handleButton)
+    # Block the Button Press if the recording has started
+    global can_press_button
+    if not can_press_button:
+        return
+    can_press_button = False
 
     captured_data = captureData()
 
@@ -151,7 +155,7 @@ def handleButton(btn: 0 | 1) -> None:
 
     print('Please press button 1 on your phone to start recording')
     print('Waiting for button input ...')
-    sensor.register_callback('button_1', handleButton)
+    can_press_button = True
 
 chooseName()
 chooseActivity()
