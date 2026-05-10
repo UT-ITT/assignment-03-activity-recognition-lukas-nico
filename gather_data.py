@@ -109,7 +109,7 @@ def saveCSV(data: [{ datetime: datetime, acc_x: float, acc_y: float, acc_z: floa
     data_frame = data_frame.resample('10ms').mean()
 
     # Add timestamp field (convert from nano- to milli-seconds)
-    data_frame.insert(0, 'timestamp', data_frame.index.astype('int64') // 1_000_000)
+    data_frame.insert(0, 'timestamp', data_frame.index.astype('int64') // 1_000)
 
     # Add the id field
     data_frame.insert(0, 'id', range(len(data_frame)))
