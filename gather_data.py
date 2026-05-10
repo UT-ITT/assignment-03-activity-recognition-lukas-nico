@@ -117,45 +117,31 @@ def saveCSV(data: [{ datetime: datetime, acc_x: float, acc_y: float, acc_z: floa
     # Save the data frame as csv and keep the index (timestamp)
     data_frame.to_csv(filename, index=False)
 
-def handleButton(btn: 0 | 1) -> None:
-    global can_press_button
+def mainLoop() -> None:
+    while True:
+        chooseName()
+        chooseActivity()
 
-    # Safeguard against button release or early button_press
-    if btn != 1 or not can_press_button: return
+        print('Please press button 1 on your phone to start recording')
+        print('Waiting for button input ...')
+        while sensor.get_value('button_1') != 1:
+            time.sleep(0.01)
 
-    can_press_button = False
-    captured_data = captureData()
+        captured_data = captureData()
 
-    # Repeat until y or n
-    while (save_data := input('Save data (y/n): ')) not in ['y', 'n']: pass
+        # Repeat until y or n
+        while (save_data := input('Save data [y/n] (y): ')) not in ['y', 'n', '']: pass
 
-    if save_data == 'y':
-        # Ensure the output directory exists
-        Path('data').mkdir(exist_ok = True)
+        if save_data != 'n':
+            # Ensure the output directory exists
+            Path('data').mkdir(exist_ok = True)
 
-        saveCSV(captured_data, f'./data/{name}-{activity}-{findNextNumber()}.csv')
+            saveCSV(captured_data, f'./data/{name}-{activity}-{findNextNumber()}.csv')
 
-    while (continue_capture := input('Capture more data (y/n): ')) not in ['y', 'n']: pass
+        while (continue_capture := input('Capture more data [y/n] (y): ')) not in ['y', 'n', '']: pass
 
-    if continue_capture == 'n':
+        if continue_capture == 'n':
+            sensor.disconnect()
+            return
 
-        # Stop worker thread
-        # Workaround to avoid using a worker queue
-        # Since calling join on the same thread raises an exception
-        sensor._connection_thread = None
-        sensor.disconnect()
-        return
-
-    chooseName()
-    chooseActivity()
-
-    print('Please press button 1 on your phone to start recording')
-    print('Waiting for button input ...')
-    can_press_button = True
-
-chooseName()
-chooseActivity()
-
-print('Please press button 1 on your phone to start recording')
-print('Waiting for button input ...')
-sensor.register_callback('button_1', handleButton)
+mainLoop()
