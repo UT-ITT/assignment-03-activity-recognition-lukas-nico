@@ -137,7 +137,7 @@ def create_labels():
 def load(delta):
     global loaded, recognizer
     if not loaded:
-        recognizer = Recognizer()
+        recognizer = activity.Recognizer()
         load_images()
         create_sprites()
         create_labels()
@@ -218,32 +218,6 @@ def on_draw():
         line.draw()
     else:
         loading_label.draw()
-
-class Recognizer:
-    def __init__(self):
-        # Wir starten den Frame-Zähler bei 0
-        self.frame_count = 0
-    def predict(self):
-        self.frame_count += 1
-
-        # 60 Frames pro Sekunde (60 Hz)
-        # 1. Die ersten 3 Sekunden -> None (0 bis 180 Frames)
-        if self.frame_count < 3 * 60:
-            return None
-
-        # 2. Die nächsten 5 Sekunden -> "jumpingjack" (181 bis 480 Frames)
-        # (3s Start + 5s Dauer = 8 Sekunden insgesamt)
-        elif self.frame_count < (3 + 5) * 60:
-            return "jumpingjack"
-
-        # 3. Danach für 3 Sekunden -> "rowing" (481 bis 660 Frames)
-        # (8s Start + 3s Dauer = 11 Sekunden insgesamt)
-        elif self.frame_count < (3 + 5 + 3) * 60:
-            return "rowing"
-
-        # Optional: Nach dem Testlauf wieder auf None schalten
-        else:
-            return None
 
 pyglet.clock.schedule_interval(update, 1/60)
 pyglet.clock.schedule_interval(animateSprites, 1)
