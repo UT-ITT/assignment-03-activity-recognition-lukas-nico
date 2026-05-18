@@ -14,7 +14,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
 
 SAMPLE_RATE = 100
-TRAIN_DATASET_PATH = './test-data'
+TRAIN_DATASET_PATH = './data'
 SENSOR_COLUMNS = set(['acc_x', 'acc_y', 'acc_z', 'gyro_x', 'gyro_y', 'gyro_z'])
 EXPECTED = set(['id', 'timestamp']) | SENSOR_COLUMNS
 PORT = 5700
